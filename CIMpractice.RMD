@@ -1,0 +1,101 @@
+---
+title: "ComputerIntensiveMethodsPractice"
+author: "Olusoji Oluwafemi Daniel and Owokomo Olajumoke Evangelina"
+date: "21 September 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = F, warning = F)
+library(tidyr)
+library(purrr)
+library(magrittr)
+library(dplyr)
+```
+
+## Summary
+
+All codes and write ups here are done to practice the concepts taught in Computer Intensive Methods and also to refine some of the codes used in the course using the `purrr` package.
+
+## Sampling Distributions
+
+```{r}
+
+```
+
+## Constructing The Empirical Distribution
+
+The empirical distribution function is a function that assigns the probability $\frac{1}{n}$ to each sample value. It can be used to approximate the distribution function of the random variable in question.
+
+### Using a Generated Sequnece
+
+```{r}
+#generate ssome random sequence
+x <- sort(seq(-5,5,length=1000))
+#probability of each value in x
+dx <- dnorm(x)
+#Density plot of x
+plot(x,dx,type='l')
+#Probability Distribution
+px <- pnorm(x)
+#plot of the Probability Distribution
+plot(x,px,type='l')
+```
+
+### Using Simulated Values From a Normal Distribution
+
+```{r}
+#simulate 1000 values from the normal distribution and sort them
+nv <- sort(rnorm(1000,0,1))
+# Obtaining the Distribution Function
+nvp <- pnorm(nv)
+#plotting the distribution function
+plot(nv,nvp,type='l')
+##getting the empirical distribution
+emnv <- (1:length(nv))/length(nv)
+lines(nv,emnv,col=3,lwd=2)
+```
+
+It is seen that the empirical distribution properly approximates the distribution function even though it is a discrete distribution that assigns an equal probability $\frac{1}{n}$ to all samples.
+
+## Bootstrapping
+
+
+```{r}
+# A sample of 10 shoe sizes
+ss <- c(11.201, 10.035, 11.118, 9.055, 9.434, 9.663, 10.403, 11.662, 9.285,8.84)
+#summary statistics of shoe size
+mean(ss)
+var(ss)
+sd(ss)
+#variacne of the sample mean
+var(ss)/length(ss)
+#standard error 
+sd(ss)/sqrt(length(ss))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
