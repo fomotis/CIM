@@ -11,6 +11,7 @@ library(tidyr)
 library(purrr)
 library(magrittr)
 library(dplyr)
+library(tibble)
 ```
 
 ## Summary
@@ -74,9 +75,110 @@ var(ss)/length(ss)
 sd(ss)/sqrt(length(ss))
 ```
 
+### Non Parametric Bootstrap of The Standard Error of the Mean
+
+In non parametric bootstrapp, sampling is done from the empirical distribution contrary to the parametric bootstrapp where sampling is done from an assumed distribution and the parameters of such distribution is replaced by the MLE estimates.
+
+```{r}
+n <- length(ss)
+B <- 1000
+mss <- numeric(B)
+#bootstrapping algorithm
+set.seed(1000)
+for(i in 1:B){
+  sams <- sample(ss,n,replace = T)
+  mss[[i]] <- mean(sams)
+}
+#
+mean(mss)
+#
+var(mss)
+#
+sd(mss)
+```
+
+### Distribution of the Nonparametric Bootstrapp Estimates
+
+```{r}
+hist(mss)
+```
+
+### Parametric Bootstrapp
+
+It can be assumed that the shoe size is from a normally distributed population where the mean and variance can be replaced with their plug in estimates (`r mean(ss)` and `r var(ss)`). Rather than take random samples from the empirical distribution, samples are taken from the distribution function whose parameters are the plug in estimates, i.e. N(`r mean(ss)`, `r var(ss)`).
+
+```{r}
+n <- length(ss)
+B <- 1000
+mss <- numeric(B)
+#bootstrapping algorithm
+set.seed(1000)
+for(i in 1:B){
+  sams <- rnorm(n,mean(ss),sd(ss))
+  mss[[i]] <- mean(sams)
+}
+#
+mean(mss)
+#
+var(mss)
+#
+sd(mss)
+```
 
 
+### Distribution of the Parametric Bootstrapp Estimates
 
+```{r}
+hist(mss)
+```
+
+
+### Bootstrapping The Standard Error of The COrrelation Coefficient
+
+```{r}
+#dataset
+practice <- tibble(x=c(29,435,86,1090,219,503,47,3524,185,98,952,89),
+                   y=c(127,214,133,208,153,184,130,217,141,154,194,103))
+#observed correlation
+cor(practice$x,practice$y)
+#scatter plot
+plot(practice$x,practice$y)
+B <- 5000
+out <- vector("numeric",B)
+nsamp8 <- vector("numeric",B)
+for(i in 1:B){
+  rs <- sample(1:length(practice$x),length(practice$x),replace = T)
+  #number of times observation 8 was sampled
+  nsamp8[[i]] <- sum(rs==8)
+  #sim <- practice[rs,]
+  sim <- practice %>% slice(rs)
+  out[[i]] <- cor(sim$x,sim$y)
+}
+#correlation estimate
+mean(out)
+#variance of bootstrap replicate
+var(out)
+#sd of bootstrap replicate
+sd(out)
+```
+
+### Distribution of the Bootstrapped Correlations
+
+```{r}
+hist(out)
+```
+
+### Influence of Observation 8
+
+```{r}
+#correlation without observation 8
+practice2 <- practice %>% filter(x < 2000 & y < 2000)
+cor(practice2$x,practice2$y)
+#Number of times Observation 8 was sampled
+plot(1:B,nsamp8,main='Number of Times Sample 8 was Sampled')
+#Correlation vs Number of Times Sample 8 was taken
+boxplot(out~factor(nsamp8),col=5)
+```
 
 
 
