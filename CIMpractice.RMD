@@ -83,6 +83,7 @@ In non parametric bootstrapp, sampling is done from the empirical distribution c
 n <- length(ss)
 B <- 1000
 mss <- numeric(B)
+mss2 <- numeric(B)
 #bootstrapping algorithm
 set.seed(1000)
 for(i in 1:B){
@@ -95,6 +96,9 @@ mean(mss)
 var(mss)
 #
 sd(mss)
+#or
+test <- unlist(map(1:B,function(i){sams <- sample(ss,n,replace = T)
+mss2[[i]] <- mean(sams)}))
 ```
 
 ### Distribution of the Nonparametric Bootstrapp Estimates
@@ -111,6 +115,7 @@ It can be assumed that the shoe size is from a normally distributed population w
 n <- length(ss)
 B <- 1000
 mss <- numeric(B)
+mss2 <- numeric(B)
 #bootstrapping algorithm
 set.seed(1000)
 for(i in 1:B){
@@ -123,6 +128,9 @@ mean(mss)
 var(mss)
 #
 sd(mss)
+#or 
+test2 <- unlist(map(1:B,function(i){sams <- rnorm(n,mean(ss),sd(ss))
+mss2 <- mean(sams)}))
 ```
 
 
@@ -180,8 +188,80 @@ plot(1:B,nsamp8,main='Number of Times Sample 8 was Sampled')
 boxplot(out~factor(nsamp8),col=5)
 ```
 
+### Estimation of Bias via Bootstrapping
 
+Bias is defined as how far the estimator is from the true parameter on average, i.e. $$bias(\hat{\theta}) = E(\hat{\theta}) - \theta$$ and estimate is obtained by replacing $\theta$ by its plugin value which gives; $$\hat{bias(\hat{\theta})} = E(\hat{\theta}) - \hat{\theta}$$.
 
+### Example of the Patch Data
+
+```{r}
+patchdata <- tibble(placebo = c(9243,9671,11792,13357,9055,6290,12412,18806),
+                    old=c(17649,12013,19979,21816,13850,9806,17208,29044),
+                    new=c(16449,14614,17274,23798,12560,10157,16570,26325))
+patchdata <- patchdata %>% mutate(y=new-old,z=old-placebo)
+observed_estimate <- mean(patchdata$y)/mean(patchdata$z)
+```
+
+####  Bootstrap Approach
+
+```{r}
+set.seed(500)
+B <- 5000
+tethas <- vector("numeric",B)
+for(i in 1:B){
+  drawn <- sample(1:length(patchdata$placebo),replace=T)
+  dat <- patchdata %>% slice(drawn)
+  tethas[i] <- mean(dat$y)/mean(dat$z)
+}
+bias <- mean(tethas) - observed_estimate
+#distribution of the tethas
+hist(tethas,nclass=30,probability = T)
+abline(v=observed_estimate,col=2)
+abline(v=mean(tethas),col=3,lty=2)
+#confidence intervals
+quantile(tethas,c(0.025,0.975))
+```
+
+### Bootstrap Confidence Interval
+
+There are four ways to construct confidence intervals via bootstap which are;
+
+1. Bootstrap t confidence interval (non parametric)
+2. Bootstrap standard normal confidence interval (parametric)
+3. Bootsrap percentile confidence interval (parametric or non-parametric)
+4. Bca method
+
+#### Bootstrap t Confidence Intervals
+
+```{r}
+mousedata <- tibble(z=c(94,197,16,38,99,141,23),
+                    y=c(52,104,146,10,51,30,40))
+#classical confidence intervals
+tethahat <- mean(mousedata$z)
+serror <- sd(mousedata$z)/sqrt(length(mousedata$z))
+n <- length(mousedata$z)
+tethahat + c(-1,1 )*qnorm(0.95)*serror
+#bootstrap t
+B <- 50000
+zs <- numeric(B)
+set.seed(5000)
+for(i in 1:B){
+  sims <- sample(mousedata$z,n,replace = T)
+  zs[[i]] <- (mean(sims) - tethahat)/serror
+}
+#or
+fry <- unlist(map(1:B, function(i){sims <- sample(mousedata$z,n,replace = T)
+(mean(sims) - tethahat)/serror}))
+#lower
+tethahat - abs(quantile(zs,0.025))*serror
+#higher
+tethahat + quantile(zs,0.975)*serror
+###
+#lower
+tethahat - abs(quantile(fry,0.025))*serror
+#higher
+tethahat + quantile(fry,0.975)*serror
+```
 
 
 
